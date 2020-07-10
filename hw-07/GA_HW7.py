@@ -3,6 +3,7 @@
 """
 
 @author: Edward Jones
+
 """
 
 from deap import creator, base, tools, algorithms
@@ -530,8 +531,8 @@ attribute_map = {
     'z':        [DT.Interval,(0, 32)] }
     
 target = "price"
-df  = pd.read_excel("dataFiles/diamonds_train.xlsx")
-dfv = pd.read_excel("dataFiles/diamonds_validation.xlsx")
+df  = pd.read_excel("diamonds_train.xlsx")
+dfv = pd.read_excel("diamonds_validation.xlsx")
 print("Read", df.shape[0], " training observations with ", 
       df.shape[1], "attributes:\n")
 print("Read", dfv.shape[0], " validation observations with ", 

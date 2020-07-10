@@ -559,7 +559,7 @@ trainfile = "diamonds_train.xlsx"
 validfile = "diamonds_validation.xlsx"
 
 df = pd.read_excel(trainfile)
-print("Read", df.shape[0], "observations with ", 
+print("Training dataset contains ", df.shape[0], "observations with ", 
       df.shape[1], "attributes:\n")
 
 rie = ReplaceImputeEncode(data_map=attribute_map, interval_scale='std',
@@ -575,8 +575,8 @@ print("{:*>71s}".format('*'))
 # n_init:  set to the number of candidate interval and binary features
 # n_nom:   set to a list of levels for each candidate nominal feature
 #          if there are no candidate nominal features, set to an empty list []
-n_int = 10       # an integer 0 or greater
-n_nom = [14, 28] # 42 dummy features
+n_int = 6       # an integer 0 or greater
+n_nom = [5, 7, 8] # 42 dummy features
 p     = n_int + sum(n_nom) # Total number of features 52
 
 # modes:   the list of currently available statistical models
@@ -635,7 +635,7 @@ plotGenerations(gen, lnfit, features)
 # select the best individual
 fit, individual, header = findBest(hof, goodFit, X, y)
 print("Best Fitness:", fit[0])
-print("Number of Features Selecterd: ", len(header))
+print("Number of Features Selected: ", len(header))
 print("\nFeatures:", header)
 sys.exit() ############################################# Stop Here
 Xc = sm.add_constant(X[header])
