@@ -1,0 +1,3 @@
+[submodule "nn-keras-demo"]
+	path = nn-keras-demo
+	url = https://github.com/rainwaterone/nn-keras-demo.git
