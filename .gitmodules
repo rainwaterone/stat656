@@ -1,3 +1,7 @@
 [submodule "nn-keras-demo"]
 	path = nn-keras-demo
 	url = https://github.com/rainwaterone/nn-keras-demo.git
+[submodule "stat656"]
+	path = stat656
+	url = https://github.com/rainwaterone/stat656
+	branch = master
