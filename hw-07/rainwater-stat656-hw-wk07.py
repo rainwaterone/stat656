@@ -20,6 +20,14 @@ from math                 import log, isfinite, sqrt, pi
 from sklearn.linear_model import LogisticRegression, LinearRegression, Lasso
 from sklearn.metrics      import mean_squared_error, r2_score
 from scipy.linalg         import qr_multiply, solve_triangular
+
+def header(headerstring):
+    lead = 38-(int(len(headerstring)/2))
+    tail = 76-lead-len(headerstring)
+    print('\n' + ('*'*78))
+    print(('*'*lead) + ' ' + headerstring + ' ' + ('*'*tail))
+    print(('*'*78))
+    return
               
 def rngFit(z):
     r = maxFit(z) - minFit(z)
@@ -559,17 +567,27 @@ trainfile = "diamonds_train.xlsx"
 validfile = "diamonds_validation.xlsx"
 
 df = pd.read_excel(trainfile)
+df_valid = pd.read_excel(validfile)x
+
 print("Training dataset contains ", df.shape[0], "observations with ", 
       df.shape[1], "attributes:\n")
+print("Validation dataset contains ", df_valid.shape[0], "observations with ", 
+      df_valid.shape[1], "attributes:\n")
 
 rie = ReplaceImputeEncode(data_map=attribute_map, interval_scale='std',
                           nominal_encoding='one-hot',
                           drop=False, display=True)
+header('Performing RIE...')
 encoded_df = rie.fit_transform(df)
+encoded_dfv = rie.fit_transform(df_valid)
 
 y = encoded_df[target] # The target is not scaled or imputed
 X = encoded_df.drop(target, axis=1)
 
+y_valid = encoded_dfv[target] # The target is not scaled or imputed
+X_valid = encoded_dfv.drop(target, axis=1)
+
+header('Starting genetic algorithm...')
 print("{:*>71s}".format('*'))
 # apply genetic algorithm
 # n_init:  set to the number of candidate interval and binary features
@@ -637,7 +655,8 @@ fit, individual, header = findBest(hof, goodFit, X, y)
 print("Best Fitness:", fit[0])
 print("Number of Features Selected: ", len(header))
 print("\nFeatures:", header)
-sys.exit() ############################################# Stop Here
+# sys.exit() ############################################# Stop Here
+
 Xc = sm.add_constant(X[header])
 model = sm.OLS(y, Xc)
 results = model.fit()
