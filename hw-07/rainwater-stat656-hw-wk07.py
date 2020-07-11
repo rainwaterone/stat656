@@ -21,7 +21,7 @@ from sklearn.linear_model import LogisticRegression, LinearRegression, Lasso
 from sklearn.metrics      import mean_squared_error, r2_score
 from scipy.linalg         import qr_multiply, solve_triangular
 
-def header(headerstring):
+def heading(headerstring):
     lead = 38-(int(len(headerstring)/2))
     tail = 76-lead-len(headerstring)
     print('\n' + ('*'*78))
@@ -567,7 +567,7 @@ trainfile = "diamonds_train.xlsx"
 validfile = "diamonds_validation.xlsx"
 
 df = pd.read_excel(trainfile)
-df_valid = pd.read_excel(validfile)x
+df_valid = pd.read_excel(validfile)
 
 print("Training dataset contains ", df.shape[0], "observations with ", 
       df.shape[1], "attributes:\n")
@@ -577,7 +577,7 @@ print("Validation dataset contains ", df_valid.shape[0], "observations with ",
 rie = ReplaceImputeEncode(data_map=attribute_map, interval_scale='std',
                           nominal_encoding='one-hot',
                           drop=False, display=True)
-header('Performing RIE...')
+heading('Performing RIE...')
 encoded_df = rie.fit_transform(df)
 encoded_dfv = rie.fit_transform(df_valid)
 
@@ -587,7 +587,7 @@ X = encoded_df.drop(target, axis=1)
 y_valid = encoded_dfv[target] # The target is not scaled or imputed
 X_valid = encoded_dfv.drop(target, axis=1)
 
-header('Starting genetic algorithm...')
+heading('Performing genetic algorithm feature selection...')
 print("{:*>71s}".format('*'))
 # apply genetic algorithm
 # n_init:  set to the number of candidate interval and binary features
@@ -629,7 +629,7 @@ else:
     n_pop = 100
     n_gen =  50
 
-print("{:*>71s}".format('*'))
+# print("{:*>71s}".format('*'))
 print("{:*>14s}     GA Selection using {:>5s} Fitness         {:*>11s}". 
       format('*', goodFit, '*'))
 print("{:*>14s} {:>11s} Models and {:>6s} Initialization {:*>11s}". 
@@ -662,9 +662,7 @@ model = sm.OLS(y, Xc)
 results = model.fit()
 print(results.summary())
 print(" ")
-print("{:*>71s}".format('*'))
-print("{:*>14s}     STEPWISE SELECTION    {:*>30s}". format('*', '*'))
-print("{:*>71s}".format('*'))
+heading('Performing Stepwise Feature Selection...')
 
 sw       = stepwise(encoded_df, target, reg="linear", method="stepwise",
                     crit_in=0.1, crit_out=0.1, verbose=True)
@@ -681,17 +679,20 @@ bic      = em.bic(logl, nobs, model_df)
 aic      = em.aic(logl, nobs, model_df)
 print("BIC: ", bic)
 print(" ")    
-print("{:*>71s}".format('*'))
-print("{:*>14s}     REPLACE IMPUTE ENCODE      {:*>25s}". format('*', '*'))
-print("{:*>71s}".format('*'))
+heading('Performing RIE for OLS and Lasso...')
 
 rie = ReplaceImputeEncode(data_map=attribute_map, 
                           nominal_encoding="one-hot", 
                           drop=True, display=True)
 encoded_df = rie.fit_transform(df)
+encoded_dfv = rie.fit_transform(df_valid)
 
 y = encoded_df[target]
 X = encoded_df.drop(target, axis=1)
+
+y_valid = encoded_dfv[target] # The target is not scaled or imputed
+X_valid = encoded_dfv.drop(target, axis=1)
+
 print(" ")
 print("{:*>71s}".format('*'))
 print("{:*>14s}     FIT FULL MODEL        {:*>30s}". format('*', '*'))
@@ -706,20 +707,57 @@ nobs     = y.shape[0]
 bic      = em.bic(ll, nobs, model_df)
 print("BIC:", bic)
 print(" ")
-print("{:*>71s}".format('*'))
-print("{:*>18s}        LASSO       {:*>33s}". format('*', '*'))
-print("{:*>71s}".format('*'))
+
+
+heading('Performing Lassso on training data...')
 alpha_list = [0.00001, 0.0001, 0.001, 0.002, 0.003, 0.004, 0.005, 
               0.006, 0.007, 0.008, 0.009, 0.01, 0.1, 1.0]
+
+# Perform lasso regularization and choose coefficient with lowest bic
+
+bicmin = np.inf
+bicminfeatures = []
+j = 0
+lasso_coeffs = np.zeros((X.shape[1], len(alpha_list)))
+
 for a in alpha_list:
+    featurelist = []
     clr = Lasso(alpha=a, random_state=12345)
     clr.fit(X, y)
     c = clr.coef_
+    lasso_coeffs[:,j] = c
+    j += 1
+    
+    # Count the number of coefficients and capture features with non-zero
+    # coefficients
+    
     z = 0
     for i in range(len(c)):
         if abs(c[i]) > 1e-3:
             z = z+1
+            featurelist.append(X.columns[i])
     print("Alpha: ", a, " Number of Coefficients: ", z, "/", len(c))
+    print("\nFeatures with non-zero coefficients are: ")
+    for feature in featurelist: print(feature)
+    
     linreg.display_metrics(clr, X, y)
+    heading('Performing validation on selected features...')
+    clr.fit(X[featurelist], y)
+    vpredict = clr.predict(X_valid[featurelist])
+
+    
+    bic = linreg.return_metrics(clr,X_valid[featurelist],y_valid)[3]
+    if bic <= bicmin:
+        bicmin = bic
+        bicminalpha = a
+        bicminfeatures = featurelist
 
 print("{:*>71s}".format('*'))
+print("Lasso minimum validation BIC: ",bicmin," at Alpha = ",bicminalpha)
+print("Selected feature list: ")
+for feature in bicminfeatures: print(feature)
+
+
+
+
+
