@@ -22,11 +22,22 @@ from sklearn.metrics      import mean_squared_error, r2_score
 from scipy.linalg         import qr_multiply, solve_triangular
 
 def heading(headerstring):
-    lead = 38-(int(len(headerstring)/2))
-    tail = 76-lead-len(headerstring)
-    print('\n' + ('*'*78))
+    """
+    Centers headerstring on the page. For formatting to stdout
+    Parameters
+    ----------
+    headerstring : string
+    String that you wish to center.
+    Returns
+    -------
+    Returns: None.
+    """
+    tw = 70 # text width
+    lead = int(tw/2)-(int(len(headerstring)/2))-1
+    tail = tw-lead-len(headerstring)-2
+    print('\n' + ('*'*tw))
     print(('*'*lead) + ' ' + headerstring + ' ' + ('*'*tail))
-    print(('*'*78))
+    print(('*'*tw))
     return
               
 def rngFit(z):
@@ -546,8 +557,7 @@ def plotGenerations(gen, lnbic, features):
     plt.savefig("GA_Feature_Select.pdf")
     plt.show()
 #*****************************************************************************
-print("{:*>71s}".format('*'))
-
+heading('Loading attribute map...')
 attribute_map = {
     'obs':[DT.Ignore, (1, 53940)],
     'price':[DT.Interval, (300, 20000)],
@@ -566,6 +576,8 @@ target = "price"
 trainfile = "diamonds_train.xlsx"
 validfile = "diamonds_validation.xlsx"
 
+heading('Reading training and validation datasets...')
+
 df = pd.read_excel(trainfile)
 df_valid = pd.read_excel(validfile)
 
@@ -574,10 +586,10 @@ print("Training dataset contains ", df.shape[0], "observations with ",
 print("Validation dataset contains ", df_valid.shape[0], "observations with ", 
       df_valid.shape[1], "attributes:\n")
 
-rie = ReplaceImputeEncode(data_map=attribute_map, interval_scale='std',
+rie = ReplaceImputeEncode(data_map=attribute_map,
                           nominal_encoding='one-hot',
                           drop=False, display=True)
-heading('Performing RIE...')
+heading('Performing RIE for Genetic Algorithm Feature Selection...')
 encoded_df = rie.fit_transform(df)
 encoded_dfv = rie.fit_transform(df_valid)
 
@@ -588,7 +600,7 @@ y_valid = encoded_dfv[target] # The target is not scaled or imputed
 X_valid = encoded_dfv.drop(target, axis=1)
 
 heading('Performing genetic algorithm feature selection...')
-print("{:*>71s}".format('*'))
+
 # apply genetic algorithm
 # n_init:  set to the number of candidate interval and binary features
 # n_nom:   set to a list of levels for each candidate nominal feature
@@ -611,7 +623,7 @@ fitness    = ['bic', 'aic', 'AdjR2']
 init       = ['star', 'random']
 # Set calcModel, goodFit and initMethod to your choice for the statistical
 #     model, the goodness of fit metric, and the initialization algorithm.
-calcModel  = models [0]
+calcModel  = models [1]
 goodFit    = fitness[0]
 initMethod = init[0] #Initial generation has only 1 feature per individual.
              #Initial generation with 'random' has about 50% of all features.
@@ -629,7 +641,7 @@ else:
     n_pop = 100
     n_gen =  50
 
-# print("{:*>71s}".format('*'))
+# print("{:*>70s}".format('*'))
 print("{:*>14s}     GA Selection using {:>5s} Fitness         {:*>11s}". 
       format('*', goodFit, '*'))
 print("{:*>14s} {:>11s} Models and {:>6s} Initialization {:*>11s}". 
@@ -657,28 +669,70 @@ print("Number of Features Selected: ", len(header))
 print("\nFeatures:", header)
 # sys.exit() ############################################# Stop Here
 
-Xc = sm.add_constant(X[header])
+heading('Run OLS on training data, using attributes selected via GA...')
+
+Xc = sm.add_constant(X[header]) # Set up model using features selected in GA
 model = sm.OLS(y, Xc)
 results = model.fit()
-print(results.summary())
+tr_pred = model.predict(results.params)
 print(" ")
+n = Xc.shape[0]
+k = Xc.shape[1] + 1
+aic      = em.aic(results.llf, n, k)
+bic      = em.bic(results.llf, n, k)
+ASE      = mean_squared_error(y,tr_pred)
+Root_ASE = sqrt(ASE)
+print(results.summary())
+print("\nTraining Data Metrics - OLS with GA-selected Features")
+print("{:.<25s}{:12.4f}".format('ASE', ASE))
+print("{:.<25s}{:12.4f}".format('Square Root of ASE', Root_ASE))
+print("{:.<25s}{:12.4f}".format('AIC', aic))
+print("{:.<25s}{:12.4f}".format('BIC', bic))
+print("{:.<25s}{:12.4f}".format('Adj. R-Squared', results.rsquared_adj))
+
+
+heading('Test OLS model with GA selected features against validation data...')
+Xcv   = sm.add_constant(X_valid[header])
+predv = model.predict(results.params, Xcv)
+ASE   = mean_squared_error(y_valid,predv)
+Root_ASE = sqrt(ASE)
+print("\nValidation Data Metrics - OLS with GA-selected Features")
+print("{:.<25s}{:12.4f}".format('ASE', ASE))
+print("{:.<25s}{:12.4f}".format('Square Root of ASE', Root_ASE))
+
+
 heading('Performing Stepwise Feature Selection...')
 
 sw       = stepwise(encoded_df, target, reg="linear", method="stepwise",
                     crit_in=0.1, crit_out=0.1, verbose=True)
 selected = sw.fit_transform()
-print("Number of Selected Features: ", len(selected))
+print("Number of Selected Attributes: ", len(selected))
 Xc  = sm.add_constant(encoded_df[selected])
-model   = sm.OLS(y, Xc)
-results = model.fit()            
+model   = sm.OLS(y, Xc) # create OLS model using stepwise selected features
+results = model.fit()   # fit OLS model
+pred    = model.predict(results.params, Xc)
 print(results.summary())
 logl  = model.loglike(results.params)
 model_df = model.df_model + 2 #plus intercept and sigma
 nobs     = y.shape[0]
 bic      = em.bic(logl, nobs, model_df)
 aic      = em.aic(logl, nobs, model_df)
+mse      = em.mse(y, pred)
 print("BIC: ", bic)
+print("ASE: ", mse)
 print(" ")    
+
+heading('Validating Stepwise Feature Selection with validation data...')
+Xcv   = sm.add_constant(X_valid[selected])
+predstep = model.predict(results.params, Xcv)
+ASE   = mean_squared_error(y_valid,predstep)
+Root_ASE = sqrt(ASE)
+print("\nValidation Data Metrics - linear with stepwise feature selection")
+print("{:.<25s}{:12.4f}".format('ASE', ASE))
+print("{:.<25s}{:12.4f}".format('Square Root of ASE', Root_ASE))
+
+
+
 heading('Performing RIE for OLS and Lasso...')
 
 rie = ReplaceImputeEncode(data_map=attribute_map, 
@@ -694,40 +748,55 @@ y_valid = encoded_dfv[target] # The target is not scaled or imputed
 X_valid = encoded_dfv.drop(target, axis=1)
 
 print(" ")
-print("{:*>71s}".format('*'))
-print("{:*>14s}     FIT FULL MODEL        {:*>30s}". format('*', '*'))
-print("{:*>71s}".format('*'))
+heading('Performing OLS regression on training data with all attributes...')
 Xc = sm.add_constant(X)
 lr = sm.OLS(y, Xc)
 results = lr.fit()
+pred    = model.predict(results.params, Xc)
 print(results.summary())
 ll       = lr.loglike(results.params)
 model_df = lr.df_model + 2 #plus intercept and sigma
 nobs     = y.shape[0]
 bic      = em.bic(ll, nobs, model_df)
-print("BIC:", bic)
-print(" ")
+mse      = em.mse(y, pred)
+print("BIC: ", bic)
+print("ASE: ", mse)
+print(" ")    
+
+heading('Validating OLS with all features with validation data...')
+Xcv   = sm.add_constant(X_valid)
+predOLS = model.predict(results.params, Xcv)
+ASE   = mean_squared_error(y_valid,predOLS)
+Root_ASE = sqrt(ASE)
+print("\nValidation Data Metrics - OLS with all features")
+print("{:.<25s}{:12.4f}".format('ASE', ASE))
+print("{:.<25s}{:12.4f}".format('Square Root of ASE', Root_ASE))
 
 
-heading('Performing Lassso on training data...')
+heading('Performing LASSO regression on training data...')
 alpha_list = [0.00001, 0.0001, 0.001, 0.002, 0.003, 0.004, 0.005, 
               0.006, 0.007, 0.008, 0.009, 0.01, 0.1, 1.0]
 
 # Perform lasso regularization and choose coefficient with lowest bic
 
 bicmin = np.inf
+vasemin = 0
 bicminfeatures = []
 j = 0
 lasso_coeffs = np.zeros((X.shape[1], len(alpha_list)))
 
+heading('Will perform one LASSO regression for each value of alpha: ')
+
 for a in alpha_list:
+    headtxt = 'LASSO regression for alpha = ' + str(a)
+    heading(headtxt)
     featurelist = []
     clr = Lasso(alpha=a, random_state=12345)
     clr.fit(X, y)
     c = clr.coef_
     lasso_coeffs[:,j] = c
     j += 1
-    
+    linreg.display_metrics(clr, X, y)
     # Count the number of coefficients and capture features with non-zero
     # coefficients
     
@@ -736,27 +805,30 @@ for a in alpha_list:
         if abs(c[i]) > 1e-3:
             z = z+1
             featurelist.append(X.columns[i])
-    print("Alpha: ", a, " Number of Coefficients: ", z, "/", len(c))
+
+    heading('Performing validation on selected attributes...')
+    print("Alpha: ", a, " Number of Non-zero Coefficients: ", z, "/", len(c))
     print("\nFeatures with non-zero coefficients are: ")
     for feature in featurelist: print(feature)
     
-    linreg.display_metrics(clr, X, y)
-    heading('Performing validation on selected features...')
     clr.fit(X[featurelist], y)
     vpredict = clr.predict(X_valid[featurelist])
 
     
-    bic = linreg.return_metrics(clr,X_valid[featurelist],y_valid)[3]
+    bic =  linreg.return_metrics(clr,X_valid[featurelist],y_valid)[3]
+    vase = mean_squared_error(y_valid, vpredict)
+    print('BIC for validation data = ', bic)
     if bic <= bicmin:
         bicmin = bic
         bicminalpha = a
         bicminfeatures = featurelist
+        vasemin = vase
 
-print("{:*>71s}".format('*'))
-print("Lasso minimum validation BIC: ",bicmin," at Alpha = ",bicminalpha)
-print("Selected feature list: ")
+heading('Lasso parameters producing best validation fit...')
+print("\nLasso minimum validation BIC: ",bicmin," at Alpha = ",bicminalpha)
+print("\nLasso VASE for best validation fit: ", vasemin)
+print("Lasso Selected feature list: ")
 for feature in bicminfeatures: print(feature)
-
 
 
 
