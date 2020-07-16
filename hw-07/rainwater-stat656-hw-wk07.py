@@ -567,7 +567,7 @@ trainfile = "diamonds_train.xlsx"
 validfile = "diamonds_validation.xlsx"
 
 df = pd.read_excel(trainfile)
-df_valid = pd.read_excel(validfile)x
+df_valid = pd.read_excel(validfile)
 
 print("Training dataset contains ", df.shape[0], "observations with ", 
       df.shape[1], "attributes:\n")
