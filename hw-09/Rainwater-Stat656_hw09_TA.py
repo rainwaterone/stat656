@@ -126,11 +126,11 @@ def display_term_frequency(tf, terms, n_tail=20, tfidf=None, word_cloud=True,
 # Increase column width to let pandy read large text columns
 pd.set_option('max_colwidth', 32000)
 print("{:-<40s}{:->39s}".format('*', '*'))
-print("{:-<22s}     TEXT ANALYSIS OF NTHSA GMC    {:->22s}".format('*', '*'))
+print("{:-<22s}     TEXT ANALYSIS OF NTHSA HONDA    {:->22s}".format('*', '*'))
 print("{:-<22s}        CONSUMER COMPLAINTS        {:->22s}".format('*', '*'))
 print("{:-<40s}{:->39s}".format('*', '*'))
 # Read N=11,717 California Chardonnay Reviews
-df = pd.read_excel("Excel/GMC_Complaints.xlsx")
+df = pd.read_excel("HondaComplaints.xlsx")
 n_reviews    = df.shape[0]# Check to see if documents (descriptions) were truncated
 maxsize      = 0
 n_truncated  = 0
@@ -262,7 +262,7 @@ df_prob     = pd.DataFrame(U)
 df_prob.columns = ['prob1', 'prob2','prob3','prob4','prob5',
                    'prob6','prob7','prob8','prob9']
 df          = df.join(df_prob)
-df.to_pickle('PICKLE/GMC_df_pickle.pkl')
+df.to_pickle('Honda_df_pickle.pkl')
 print("---------------------------------------------------\n")
 print("{:-<22s}      TEXT ANALYSIS COMPLETED     {:->23s}".format('*', '*'))
 print("{:-<40s}{:->39s}".format('*', '*'))

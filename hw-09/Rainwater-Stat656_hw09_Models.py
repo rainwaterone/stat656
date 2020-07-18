@@ -613,7 +613,7 @@ attribute_map = {
         'prob9':   [DT.Interval,(0.0,1.0)],
 }
 target = 'crashed'
-df     = pd.read_pickle("PICKLE/GMC_df_pickle.pkl")
+df     = pd.read_pickle("Honda_df_pickle.pkl")
 rie    = ReplaceImputeEncode(data_map=attribute_map, no_impute=[target],
                              binary_encoding='one-hot',
                              nominal_encoding='one-hot', drop=False, 
