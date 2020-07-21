@@ -135,6 +135,8 @@ n_reviews    = df.shape[0]# Check to see if documents (descriptions) were trunca
 maxsize      = 0
 n_truncated  = 0
 pd_width     = pd.get_option('max_colwidth')
+
+# Find maximum record length and count number that are truncated
 for i in range(n_reviews):
     if len(df['description'].iloc[i]) >= pd_width:
         n_truncated += 1
