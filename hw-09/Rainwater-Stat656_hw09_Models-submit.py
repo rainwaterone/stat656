@@ -1,3 +1,11 @@
+"""
+STAT 656 HW-09
+@author:Lee Rainwater
+@heavy_lifting_by: Dr. Edward Jones
+@date: 2020-07-23
+
+"""
+
 import sys, warnings, random, time
 import pandas as pd
 import numpy  as np
@@ -796,7 +804,7 @@ for d in depths:
 print("\nBest Tree Depth: ", best_depth_dt)
 title = 'Best Decision Tree: Depth = ' + str(best_depth_dt)
 tree_classifier.display_importance(best_tree, X.columns.values, 
-                                top=15, plot=True, title=title)
+                                top=15, plot=True)
 tree_classifier.display_metrics(best_tree, X, y)
 
 
@@ -861,7 +869,7 @@ for d in depths:
 print("\nBest Forest Depth: ", best_depth_rf)
 title = 'Best Random Forest: Depth = ' + str(best_depth_rf)
 forest_classifier.display_importance(best_forest, X.columns.values, 
-                                top=15, plot=True, title=title)
+                                top=15, plot=True)
 forest_classifier.display_metrics(best_forest, X, y)
 
 

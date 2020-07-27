@@ -16,6 +16,26 @@ from sklearn.model_selection import train_test_split
 # Other packages
 from collections import Counter
 
+def heading(headerstring):
+    """
+    Centers headerstring on the page. For formatting to stdout
+    Parameters
+    ----------
+    headerstring : string
+    String that you wish to center.
+    Returns
+    -------
+    Returns: None.
+    """
+    tw = 70 # text width
+    lead = int(tw/2)-(int(len(headerstring)/2))-1
+    tail = tw-lead-len(headerstring)-2
+    print('\n' + ('*'*tw))
+    print(('*'*lead) + ' ' + headerstring + ' ' + ('*'*tail))
+    print(('*'*tw))
+    return
+
+
 def display_term_frequency(tf, terms, n_tail=20, tfidf=None, word_cloud=True,
                            zipf_plot=True):
     td = text_plot.term_dic(tf, terms, scores=None)
@@ -126,8 +146,8 @@ def display_term_frequency(tf, terms, n_tail=20, tfidf=None, word_cloud=True,
 # Increase column width to let pandy read large text columns
 pd.set_option('max_colwidth', 32000)
 print("{:-<40s}{:->39s}".format('*', '*'))
-print("{:-<22s}     TEXT ANALYSIS OF NTHSA HONDA    {:->22s}".format('*', '*'))
-print("{:-<22s}        CONSUMER COMPLAINTS        {:->22s}".format('*', '*'))
+print("{:-<21s}     TEXT ANALYSIS OF NTHSA HONDA    {:->21s}".format('*', '*'))
+print("{:-<22s}            CRASH DATA             {:->22s}".format('*', '*'))
 print("{:-<40s}{:->39s}".format('*', '*'))
 # Read N=11,717 California Chardonnay Reviews
 df = pd.read_excel("HondaComplaints.xlsx")
@@ -158,19 +178,79 @@ text     = 'description' # Dataframe text column
 reviews  = np.array(df[text])
 
 # Constants
-n_topics  =  9    # Requested number of topic clusters
+n_topics  =  8    # Requested number of topic clusters
 max_terms = 15    # Max terms to describe in topic clusters
 tfidf     = True  # Use TF-IDF Weighting if True
 
 # Create Word Frequency by Review Matrix using Custom Analyzer
 # Synonym Dictionary
-syn = {"chev": 'chevrolet', "gm": 'gmc', "automobile": 'car', 
-       "vehicle": 'car', "gasoline": 'gas', "dealership": 'dealer',
-       "manufacturer": 'gmc', "chevy":'chevrolet', "issue": 'problem',
-       "highway": 'road', "air bag":'airbag', "bag":'airbag'}
+# The below dictionary seemed to work, except that it failed to synonymize
+# 'bag' to airbag.
+
+syn = {"automobile": 'car', 
+        "vehicle": 'car', 
+        "gasoline": 'gas', 
+        "crv" : 'cr-v',
+        "cr v": 'cr-v',
+        "cr": 'cr-v',
+        "fix": 'repair',
+        "dealership": 'dealer',
+        "honda dealer": 'dealer',
+        "manufacturer": 'honda', 
+        "replacement":'replace',
+        "suddenly": 'sudden',
+        "recall campaign":'recall',
+        "campaign": 'recall',
+        "issue": 'problem',
+        "complaint":'problem',
+        "highway": 'road', 
+        "seat belt":'seatbelt',
+        "air bag":'airbag',
+        "air  bag":'airbag',
+        "airbags": 'airbag',
+        "srs":'airbag',
+        "sr": 'airbag',
+        "bag":'airbag'}
+
+
+# The below dictionary did not work to synonymize different terms for 'airbag'
+# syn = {"automobile": 'car', 
+#         "vehicle": 'car', 
+#         "gasoline": 'gas', 
+#         "crv" : 'cr-v',
+#         "dealership": 'dealer',
+#         "manufacturer": 'honda', 
+#         "issue": 'problem',
+#         "highway": 'road', 
+#         "seat belt":'seatbelt',
+#         "airbag":'air bag',
+#         "airbag":'air  bag',
+#         "airbag": 'airbags',
+#         "airbag":'srs',
+#         "airbag":'sr',
+#         "airbag":'bag'}
+
+# The below dictionary did not work in assigning a list to the 'air bag' key
+# syn = {"automobile": 'car', 
+#        "vehicle": 'car', 
+#        "gasoline": 'gas', 
+#        "crv" : 'cr-v',
+#        "dealership": 'dealer',
+#        "manufacturer": 'honda', 
+#        "issue": 'problem',
+#        "highway": 'road', 
+#        "seat belt":'seatbelt',
+#        "air bag":['airbag', 'srs', 'sr']}
+
 
 # Additional Stop Words
-sw = ['tl', 'tr', 'jb', 'xxx', 'know', 'thing', 'regard']
+sw = ['tl', 'tr', 'jb', 'xxx', 'know', 'thing', 'regard', 'provide',
+      'car','honda', 'notified', 'acura', 'call', 'tell', 'approximately',
+      'read', 'sinc', 'id', 'offer', 'nhtsa', 'unit', 'go', 'many', 'need',
+      'make', 'number', 'information', 'cause', 'receive', 'prior', 
+      'notice', 'approximate', 'told', 'entire', 'happen',
+      'dealer', 'problem', 'contact', 'internet', 'appear', 'year',
+      'online', 'find', 'lj', 'responsible', 'consumer', 'part', 'van']
 ta = text_analysis(synonyms=syn, stop_words=sw, pos=True, stem=True)
 
 max_df   = 0.98 # max proportion of docs/term allowed
@@ -178,14 +258,14 @@ if max_df > 1:
     max_docs = max_df
 else:
     max_docs = math.floor(max_df*n_reviews)
-print("max_df=",max_df,"supresses terms appearing in more than", 
+print("max_df=",max_df,"suppresses terms appearing in more than", 
       max_docs, "reviews")
 min_df   =   5 # min number of docs required to include terms
 if min_df > 1:
     min_docs = min_df
 else:
     min_docs = math.ceil(min_df*n_reviews)
-print("min_df=",min_df,"supresses terms appearing in less than", 
+print("min_df=",min_df,"suppresses terms appearing in less than", 
       min_docs, "reviews")
 cv = CountVectorizer(max_df=max_df, min_df=min_df, max_features=None,
                      binary=False,  ngram_range=ngram, analyzer=ta.analyzer)
@@ -262,7 +342,7 @@ text_analysis.display_topics(uv, terms, n_terms=15, word_cloud=True)
 # Save topic clusters and probabilities to pickle
 df_prob     = pd.DataFrame(U)
 df_prob.columns = ['prob1', 'prob2','prob3','prob4','prob5',
-                   'prob6','prob7','prob8','prob9']
+                   'prob6','prob7','prob8']
 df          = df.join(df_prob)
 df.to_pickle('Honda_df_pickle.pkl')
 print("---------------------------------------------------\n")
