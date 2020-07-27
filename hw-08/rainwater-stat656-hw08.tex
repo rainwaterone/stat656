@@ -5,7 +5,7 @@
 \usepackage{listings}
 \usepackage{minted}
 \usemintedstyle{borland}
-\usepackage{color}
+\usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{lscape}
 \usepackage{rotating}
@@ -31,8 +31,13 @@
 %  tabsize=3
 %}
 
-\lstset{language=SAS, 
-  breaklines=true,  
+\lstset{language=SAS,
+  frame=single,
+  backgroundcolor=\color{yellow!20},
+  breaklines=true,
+  numbers=left,
+  stepnumber=1,
+ numberstyle=\footnotesize,
   basicstyle=\ttfamily\bfseries,
   columns=fixed,
   keepspaces=true,
