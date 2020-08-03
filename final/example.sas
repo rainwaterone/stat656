@@ -1,0 +1,8 @@
+ODS RTF FILE="C:\Users\rainwater-e\...\hw-08\CABERNET.RTF";
+PROC TABULATE DATA=&EM_IMPORT_DATA;
+CLASS TextCluster_cluster_;
+VAR POINTS PRICE;
+TABLE textCluster_cluster_, (POINTS PRICE)*MEAN;
+
+RUN;
+ODS RTF CLOSE;

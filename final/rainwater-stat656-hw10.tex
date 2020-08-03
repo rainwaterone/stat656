@@ -1,0 +1,186 @@
+\pdfminorversion=7
+\documentclass[12pt]{article}
+\usepackage{fullpage}
+\usepackage{cmu-techreport}
+\usepackage{listings}
+\usepackage{minted}
+\usemintedstyle{borland}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{lscape}
+\usepackage{rotating}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{bigstrut}
+\usepackage{dcolumn}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tbrl,
+  language=sas,
+  aboveskip=3mm,
+  belowskip=3mm,
+  backgroundcolor = \color{yellow!20},
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=left,
+  stepnumber=1,
+  numberstyle=\tiny,
+%  keywordstyle=,
+%  commentstyle=\color{dkgreen},
+%  stringstyle=\color{mauve},
+  identifierstyle=\color{blue}\ttfamily,
+  keywordstyle=\color{cyan}\ttfamily,
+  stringstyle=\color{purple}\ttfamily,
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+%\lstset{language=Python, 
+%  breaklines=true,  
+%  basicstyle=\ttfamily\bfseries,
+%  columns=fixed,
+%  keepspaces=true,
+%  identifierstyle=\color{blue}\ttfamily,
+%  keywordstyle=\color{cyan}\ttfamily,
+%  stringstyle=\color{purple}\ttfamily,
+%  commentstyle=\color{green}\ttfamily,
+%  } 
+
+
+\title{STAT 656 Final Exam}
+\author{E. Lee Rainwater}
+\date{4 August 2020}
+\abstract{Short abstract here.}
+
+%\keywords{technical reports, typesetting, Carnegie Mellon University}
+
+%\trnumber{CMU-CS-90-999}
+
+%\citationinfo{\begin{center}
+%To appear in a \TeX\ collection near you.
+%\end{center}}
+
+%\arpasupport{fox}
+% \othersupport{the National Science Foundation under grant number 99-999-99}
+% \authorsupport{The author holds a Froboz Gradual Fellowship.}
+
+% \otherdisclaimer{NSF}
+
+
+
+\makeatother
+
+\usepackage{listings}
+\renewcommand{\lstlistingname}{Listing}
+
+\begin{document}
+\maketitle
+
+\section{Summary}
+Overall Corpus Average Sentiment: 1.25
+
+Refer to Table \ref{tab:hotelSentiment}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Sentiment by Hotel}
+   \begin{tabular}{lrrr}   
+	\textit{hotel} & \textit{doc} & \textit{sentiment} & \textit{n\_words}\\	
+	\hline
+	Bally's &        162.5 &  1.205211 & 13.268519\\
+	Bellagio &       493.0 &  1.709758 & 14.270030\\
+	Circus Circus &  832.5 &  0.907237 & 12.567251\\
+	Encore &        1170.5 &  1.353040 & 17.565868\\
+	Excalibur &     1504.5 &  1.088394 & 14.302395\\
+    \hline
+    \end{tabular}%
+  \label{tab:hotelSentiment}%
+\end{table}%
+
+\section{Code Listing}
+Below is the SAS code used to generate the tabulation of wine points and cost.
+
+{\tiny{}}
+% Example of listing with code in this TeX document:
+
+%\begin{lstlisting}
+%ODS RTF FILE="C:\Users\rainwater-e\...\hw-08\CABERNET.RTF";
+%PROC TABULATE DATA=&EM_IMPORT_DATA;
+%CLASS TextCluster_cluster_;
+%VAR POINTS PRICE;
+%TABLE textCluster_cluster_, (POINTS PRICE)*MEAN;
+%
+%RUN;
+%ODS RTF CLOSE;
+%\end{lstlisting}
+
+% Example of listing with code in external file
+\lstinputlisting{example.sas}
+
+
+\section{Word Clouds}
+
+
+\begin{figure}[H]
+	\begin{center}
+%	\includegraphics[width=\textwidth, keepaspectratio, angle=0]{wordCloudz/Figure 2020-07-29 132748.png}
+	\caption{Corpus Total Word Cloud}
+	\label{fig:corpTotWordCloud}
+	\end{center}
+\end{figure}
+
+\begin{figure}
+	\begin{center}
+%	\includegraphics[width=\textwidth, keepaspectratio, angle=0]{wordCloudz/Figure 2020-07-29 132748 (1).png}
+	\caption{Corpus Sentiment Word Cloud}
+	\label{fig:corpTotWordCloud}
+	\end{center}
+\end{figure}
+
+\begin{figure}
+	\begin{center}
+%	\includegraphics[width=\textwidth, keepaspectratio, angle=0]{wordCloudz/Figure 2020-07-29 132748 (2).png}
+	\caption{Bellagio Total Word Cloud}
+	\label{fig:corpTotWordCloud}
+	\end{center}
+\end{figure}
+
+
+\begin{figure}
+	\begin{center}
+%	\includegraphics[width=\textwidth, keepaspectratio, angle=0]{wordCloudz/Figure 2020-07-29 132748 (3).png}
+	\caption{Bellagio Total Word Cloud}
+	\label{fig:corpTotWordCloud}
+	\end{center}
+\end{figure}
+
+% Below, the Python output was saved as html, then converted to LaTeX via pandoc.
+% pandoc -s python_output.html -o output.tex
+\pagebreak
+\section{Code Output}
+\texttt{
+\input{output.tex}
+}
+\begin{verbatim}
+
+
+\end{verbatim}
+
+
+%{\tiny\par}
+%
+%{\tiny{}The title, authors, date, and technical report number will
+%be typeset so as to be centered within the cut-out on the technical
+%report cover page. If the material will not fit, you will get either
+%an \verb+overfull \hbox+ message (if the material is too wide) or
+%an \verb+overfull \vbox+ message (if the material is too long.) To
+%create the title page, simply use \verb+\maketitle+ after \verb+\begin{document}+.}{\tiny\par}
+%
+%{\tiny{}In the interest of legibility technical reports should not
+%be typeset at sizes below eleven point.}{\tiny\par}
+\end{document}
