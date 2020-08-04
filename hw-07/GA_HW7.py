@@ -619,7 +619,7 @@ plotGenerations(gen, lnfit, features)
 # select the best individual
 fit, individual, header = findBest(hof, goodFit, X, y)
 print("Best Fitness:", fit[0])
-print("Number of Features Selecterd: ", len(header))
+print("Number of Features Selected: ", len(header))
 print("\nFeatures:", header)
 
 # Analysis and Evaluation using StatsModels
