@@ -18,6 +18,25 @@ filepath = 'C:/Users/rainwater-e/OneDrive - Texas A&M University/Summer-2020/sta
 
 
 def merge_files(filetype, filepath):
+    """
+    Given a specified news file type ('api' or 'news3k'), merges the daily
+    files of that type into a single file of name:
+        api    - 'api_combined.xlsx'
+        news3k - 'news3k_combined.xlsx'
+
+    Parameters
+    ----------
+    filetype : STRING
+        The value 'api' or 'news3k'
+    filepath : STRING
+        The filesystem location of the input files. The output file will be
+        written at the same location.
+
+    Returns
+    -------
+    None.
+
+    """
     typedict ={'api': 'api.xlsx', 'news3k': 'news3k.xlsx'}
     directory = os.fsencode(filepath) # Encode the directory for iteration
     df_merge = pd.DataFrame()
@@ -45,12 +64,27 @@ def merge_files(filetype, filepath):
     df_merge.to_excel(filepath + filetype + "_combined.xlsx")
 
 def merge_api_news3k(filepath):
+    """
+    Reads the files api_combined.xlsx and news3k_combined.xlsx that are in filepath
+    into dataframes. The API 'agency' field is extracted from the URL and mapped to
+    the equivalent news3k agency via dictionary.
+    Parameters
+    ----------
+    filepath : STRING
+        The filesystem location of the input files. The output file will be
+        written at the same location.
+
+    Returns
+    -------
+    None.
+
+    """
     # df_comb = pd.DataFrame()
     # df_comb.append(pd.read_excel(filepath + 'api_combined.xlsx'))
     # df_comb.append(pd.read_excel(filepath + 'news3k_combined.xlsx'))
     df_api = pd.read_excel(filepath + 'api_combined.xlsx')
     df_news3k = pd.read_excel(filepath + 'news3k_combined.xlsx')
-    df_api['agency'] = df_news3k['url'].apply(lambda url: tldextract.extract(url).domain)
+    df_api['agency'] = df_api['url'].apply(lambda url: tldextract.extract(url).domain)
     # Create a dictionary to map api agencies to equivalent news3k agencies
     agency_dict = {
         'foxnews': 'fox',
@@ -70,6 +104,7 @@ def merge_api_news3k(filepath):
         'msn': 'msn',
         'journalstar': 'journalstar'
         }
+    df_api['agency'].map(agency_dict)
 
     
     return
