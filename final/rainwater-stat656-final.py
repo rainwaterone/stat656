@@ -273,12 +273,14 @@ def sentiment(inputfile, filepath, text_col, groupcol, search_terms):
           format('*', '*'))
     print("{:-<40s}{:->39s}".format('*', '*'))
     text_analysis.display_topics(uv, terms, n_terms=15, word_cloud=True)
+    score_df = text_analysis.score_topics(U)
 
     # Save topic clusters and probabilities to pickle
     df_prob = pd.DataFrame(U)
     df_prob.columns = ['prob1', 'prob2', 'prob3', 'prob4', 'prob5']
 
-    df = df.join(df_prob)
+    df = df.join(df_prob)  # Append probability of each topic
+    df = df.join(score_df)  # Append topic assignments
     df.to_pickle('News_df_pickle.pkl')
     heading("TEXT ANALYSIS COMPLETED")
     return
@@ -576,9 +578,9 @@ def main():
         df_www.to_excel(filename,  index=False)
         print("Saved", df_www.shape[0], "articles to "+filename)
 
-    merge_api = False      # Set True to merge daily API files
-    merge_news3k = False   # Set True to merge daily News3k files
-    merge_sources = False  # Set True to merge combined API and News3k files
+    merge_api = True      # Set True to merge daily API files
+    merge_news3k = True   # Set True to merge daily News3k files
+    merge_sources = True  # Set True to merge combined API and News3k files
     run_sentiment = True  # Set True to run sentiment analysis
 
     if merge_api:
