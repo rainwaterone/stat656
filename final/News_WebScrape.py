@@ -10,6 +10,7 @@ STAT 656 Final
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import seaborn as sns
 import warnings
 from AdvancedAnalytics.Internet import scrape
@@ -31,6 +32,7 @@ search_terms = ['trump', 'biden', 'democrats', 'republicans']
 
 text_col = 'text'
 groupcol = 'agency'
+
 
 def heading(headerstring):
     """
@@ -120,6 +122,18 @@ def sentiment(inputfile, filepath, text_col, groupcol, search_terms):
     for term in terms_of_interest:
         df[text_col] = df[text_col].str.lower()
         df[term] = df[text_col].str.count(term)
+
+    plt.style.use('ggplot')
+    fig = plt.figure(figsize=(6, 6))
+    ax1 = fig.add_subplot(111)
+    ax1.scatter(df.trump, df.sentiment, s=10, c='r', label='Trump')
+    ax1.scatter(df.biden, df.sentiment, s=10, c='b', label='Biden')
+    ax1.scatter(df.fauci, df.sentiment, s=10, c='g', label='Fauci')
+    plt.legend(loc='upper right')
+    plt.xlabel('Mentions')
+    plt.ylabel('Sentiment')
+    plt.title('Sentiment vs. Article Mentions')
+    plt.show()
 
     # display_term_frequency(stf, sterms, word_cloud=False, zipf_plot=False)
 
